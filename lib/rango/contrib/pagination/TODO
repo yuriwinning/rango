@@ -1,0 +1,2 @@
+Page.current is pretty bad idea
+Everything should be in Rango::Pagination

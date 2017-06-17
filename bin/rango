@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+if RUBY_VERSION < "1.9.1"
+  abort "Rango requires at least Ruby 1.9.1. If you run JRuby, please ensure you used the --1.9 switch for JRuby command, for example jruby --1.9 -S rango create project blog"
+end
+
+base   = File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
+libdir = File.expand_path(File.join(File.dirname(base), "..", "lib"))
+
+# because of system installation, there is bin/../lib, but not bin/../lib/rango
+if File.directory?(File.join(libdir, "rango"))
+  $:.unshift(libdir) unless $:.include?(libdir)
+end
+
+begin
+  require "simple-templater"
+rescue LoadError
+  abort "You have to install simple-templater first!"
+end
+
+require "rango"
+
+# === Helpers === #
+# TODO: Generators.each { |generator| puts generator.help }
+def usage
+<<-HELP
+=== Usage ===
+rango create project mycoolproject    Generate new site
+HELP
+end
+
+begin
+  ARGV.shift.eql?("create") || abort(usage)
+  generator_name = ARGV.shift || abort(usage)
+  templater = SimpleTemplater.new(:rango)
+  # This enables you to create custom generators for Rango
+  load File.join(File.dirname(base), "..", "simple-templater.scope") # neccesary if we run rango locally and not from RubyGems
+  templater.discover!
+  generator_set = templater.find(generator_name)
+  if generator_set.nil?
+    abort "Generator #{generator_name} doesn't exist. Available generators are: #{templater.generators.map { |set| set.name }.inspect}"
+  else
+    begin
+      generator_set.run(ARGV)
+    rescue SimpleTemplater::TargetAlreadyExist => exception
+      abort exception.message
+    rescue Interrupt
+      exit
+    rescue Exception => exception
+      abort "Exception #{exception.inspect} occured during running generator #{generator_set.inspect}\n#{exception.backtrace.join("\n")}"
+    end
+  end
+end

@@ -1,0 +1,27 @@
+# encoding: utf-8
+
+module <%= @name.camel_case %>
+  <% @models.each do |model| %>
+  <% case @orm %>
+  <% when "datamapper" %>
+  class <%= model.camel_case %>
+    include DataMapper::Resource
+    property :title, String
+    property :slug,  String, key: true
+  end
+
+  <% when "sequel" %>
+  class <%= model.camel_case < Sequel::Model %>
+    # TODO: implement <%= model %> model
+  end
+
+  <% when "mongomapper" %>
+  class <%= model.camel_case %>
+    include MongoMapper::Document
+    key :title, String
+    key :slug,  String, index: true
+  end
+
+  <% end %>
+  <% end %>
+end

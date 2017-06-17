@@ -1,0 +1,23 @@
+# encoding: utf-8
+
+require_relative "../spec_helper.rb"
+
+describe <%= @name.camel_case %> do
+  include <%= @name.camel_case %>
+  <% @models.each do |model| %>
+  describe <%= model.camel_case %> do
+    before(:each) do
+      @<%= model %> = <%= model.camel_case %>.new
+    end
+
+    it "should have a title" do
+      @<%= model %>.should respond_to(:title)
+    end
+
+    it "should have a slug" do
+      @<%= model %>.should respond_to(:slug)
+    end
+  end
+
+  <% end %>
+end

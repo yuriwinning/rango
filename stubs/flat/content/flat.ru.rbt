@@ -1,0 +1,14 @@
+<%= shebang "rackup", ["-s", "thin", "-p", 4000] %>
+# encoding: utf-8
+
+# rackup -p 4000 -s thin flat.ru
+require "rango/stacks/mini"
+require "rango/router/adapters/basic"
+
+Rango.boot
+
+use Rango::Basic
+
+map("/") do
+  run Rango::Mini.app { "<h1>Rango is just Awesome!</h1>" }
+end
